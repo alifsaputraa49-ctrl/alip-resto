@@ -243,7 +243,7 @@
         let stringBase64Gambar = ""; 
 
         function masukSebagaiAdmin() {
-            if (prompt("Masukkan Password Admin:") === "admin123") {
+            if (prompt("Masukkan Password Admin:") === "@/if$@putr@") {
                 switchHalaman('admin');
             } else {
                 alert("Password Salah!");
@@ -410,7 +410,6 @@
                 if (selectedMetode === 'QRIS') {
                     alert("Pesanan dikirim! Silakan transfer ke DANA, lalu tunggu konfirmasi lunas dari kasir.");
                     setTimeout(() => { window.location.href = "https://link.dana.id/qr/6283107936220"; }, 1500);
-                }
                 tampilkanNotaDigitalPelanggan(orderData);
             });
         }
@@ -513,7 +512,11 @@
                 `).join('');
             });
         }
-
+        function hapusMenu(key) {
+        if (confirm("Apakah Anda yakin ingin menghapus menu ini?")) {db.ref('menu/' + key).remove().then(() => {alert("Menu berhasil dihapus!");
+        });
+    }
+}
         function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
         function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
 
