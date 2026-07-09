@@ -16,7 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* CSS KHUSUS CETAK PRINTER STRUK */
+        /* CSS KHUSUS CETAK PRINTER STRUK THERMAL */
         @media print {
             body { background: white; color: black; }
             .no-print { display: none !important; }
@@ -84,7 +84,7 @@
                 </div>
             </div>
 
-            <!-- Pilih Hidangan Masakan -->
+            <!-- Katalog Hidangan Masakan -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                 <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-book-open text-orange-500"></i> Pilih Daftar Menu</h3>
                 <div id="user-menu-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
@@ -148,14 +148,14 @@
 
             <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl">
                 <button onclick="switchTabAdmin('pesanan')" id="tab-btn-pesanan" class="py-2.5 rounded-lg text-xs font-bold text-center transition bg-white text-gray-900 shadow-sm">
-                    <i class="fa-solid fa-receipt mr-1"></i> Pesanan/Nota Masuk
+                    <i class="fa-solid fa-receipt mr-1"></i> Pesanan Masuk
                 </button>
                 <button onclick="switchTabAdmin('menu')" id="tab-btn-menu" class="py-2.5 rounded-lg text-xs font-bold text-center transition text-gray-500 hover:text-gray-900">
                     <i class="fa-solid fa-hamburger mr-1"></i> Input & Kelola Menu
                 </button>
             </div>
 
-            <!-- SUB-HALAMAN [A]: PESANAN MASUK -->
+            <!-- SUB-HALAMAN [A]: DAFTAR PESANAN MASUK -->
             <div id="tab-konten-pesanan" class="space-y-4">
                 <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
                     <h3 class="font-bold text-gray-800 text-xs flex items-center gap-2"><i class="fa-solid fa-camera text-orange-500"></i> Scanner Validasi Nota Pelanggan</h3>
@@ -172,7 +172,7 @@
                 </div>
             </div>
 
-            <!-- SUB-HALAMAN [B]: INPUT MENU (REVISI FILE EXPLORER/GALERI) -->
+            <!-- SUB-HALAMAN [B]: INPUT & MANAJEMEN STOK MENU -->
             <div id="tab-konten-menu" class="hidden space-y-4">
                 <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
                     <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-plus-circle text-orange-500"></i> Tambah Hidangan Baru</h3>
@@ -183,18 +183,17 @@
                             <input type="number" id="menu-stok" required placeholder="Jumlah Stok Awal" class="w-full p-2.5 border rounded-xl text-xs focus:outline-none focus:border-orange-500">
                         </div>
                         
-                        <!-- BARU: INPUT GAMBAR DARI FILE EXPLORER / GALERI -->
+                        <!-- FITUR UNGGAL GAMBAR DARI FILE EXPLORER / GALERI -->
                         <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300 text-center relative">
                             <label class="block text-[11px] font-bold text-gray-500 mb-1.5"><i class="fa-solid fa-image text-orange-500 mr-1"></i> Foto Hidangan Menu:</label>
                             
-                            <!-- Tombol File Explorer Asli yang Disembunyikan, Dipicu lewat Desain Kreatif -->
                             <input type="file" id="menu-file-input" accept="image/*" onchange="previewDanKonversiGambar(this)" class="hidden">
                             
                             <button type="button" onclick="document.getElementById('menu-file-input').click()" class="bg-orange-500 text-white font-bold text-[11px] px-4 py-2 rounded-lg shadow-sm hover:bg-orange-600 transition">
                                 <i class="fa-solid fa-folder-open mr-1"></i> Buka Galeri / Explorer
                             </button>
                             
-                            <!-- Pratinjau Gambar Mini -->
+                            <!-- Pratinjau Tampilan Gambar -->
                             <div id="wrapper-preview-gambar" class="hidden mt-3 flex flex-col items-center justify-center gap-1">
                                 <img id="preview-gambar-menu" src="" class="w-20 h-20 object-cover rounded-lg border shadow-sm">
                                 <span class="text-[10px] text-green-600 font-bold"><i class="fa-solid fa-check"></i> Gambar siap diunggah!</span>
@@ -206,19 +205,19 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                    <h3 class="font-black text-xs text-gray-800 uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked text-orange-500"></i> Atur & Tambah Jumlah Stok Langsung</h3>
+                    <h3 class="font-black text-xs text-gray-800 uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked text-orange-500"></i> Atur & Ubah Jumlah Stok Langsung</h3>
                     <div id="admin-stok-list" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- AREA STRUK PRINTER THERMAL -->
+    <!-- WADAH STRUK ELEMEN PRINTER THERMAL -->
     <div id="area-cetak-nota" style="display: none;"></div>
 
     <script>
         // ===================================================
-        // !!! PASTIKAN CONFIG DI BAWAH INI ADALAH MILIKMU !!!
+        // !!! KODE ATURAN KONFIGURASI DATABASE FIREBASE !!!
         // ===================================================
         const firebaseConfig = {
             apiKey: "AIzaSyA1...",
@@ -233,7 +232,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Variabel global sistem
+        // Status State Aplikasi Global
         let selectedMetode = 'Tunai';
         let html5QrcodeScanner = null;
         let currentFirebaseOrderKey = null;
@@ -241,7 +240,7 @@
         let intervalAlarmSuara = null;
         let listMenuData = [];
         let keranjangBelanja = {};
-        let stringBase64Gambar = ""; // Menyimpan string gambar galeri
+        let stringBase64Gambar = ""; 
 
         function masukSebagaiAdmin() {
             if (prompt("Masukkan Password Admin:") === "admin123") {
@@ -287,11 +286,11 @@
             }
         }
 
-        // --- FUNGSI BARU: PROSES GAMBAR DARI GALERI KE BASE64 ---
+        // --- PROSES DAN KONVERSI FOTO GALERI MENJADI STRING BASE64 ---
         function previewDanKonversiGambar(input) {
             const file = input.files[0];
             if (file) {
-                // Validasi ukuran max 1MB agar database tidak kepenuhan
+                // Validasi ukuran agar file tidak meledak di atas 1MB
                 if (file.size > 1024 * 1024) {
                     alert("Ukuran file foto terlalu besar! Pilih foto lain yang di bawah 1 MB.");
                     input.value = "";
@@ -300,7 +299,7 @@
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    stringBase64Gambar = e.target.result; // Teks Base64 siap masuk database
+                    stringBase64Gambar = e.target.result; 
                     document.getElementById('preview-gambar-menu').src = stringBase64Gambar;
                     document.getElementById('wrapper-preview-gambar').classList.remove('hidden');
                 };
@@ -308,7 +307,7 @@
             }
         }
 
-        // --- AMBIL DATA MENU (REAL-TIME) ---
+        // --- RETRIEVE DATA KATALOG MENU (REAL-TIME) ---
         function listenKatalogMenuPelanggan() {
             db.ref('menu').on('value', (snapshot) => {
                 listMenuData = [];
@@ -325,7 +324,6 @@
                 });
 
                 container.innerHTML = listMenuData.map(m => {
-                    // Pakai Base64 dari database jika ada, jika kosong pakai gambar cadangan default
                     const foto = m.gambar || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=150&auto=format&fit=crop';
                     const sisaStok = parseInt(m.stok || 0);
                     const isHabis = sisaStok <= 0;
@@ -382,7 +380,7 @@
             document.getElementById('btn-qris').className = (m === 'QRIS') ? 'p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
         }
 
-        // --- SUBMIT ORDER KE FIREBASE ---
+        // --- SUBMIT DATA TRANSAKSI KE DATABASE ---
         function submitOrder() {
             const nama = document.getElementById('nama').value.trim();
             const meja = document.getElementById('meja').value.trim();
@@ -395,7 +393,7 @@
                 hitungTotal += (i.harga * i.qty);
                 rincianNotaArr.push(`${i.nama} (${i.qty}x)`);
                 
-                // Potong stok produk di Firebase langsung
+                // Sinkronisasi pengurangan stok otomatis
                 const menuAsli = listMenuData.find(m => m.id === i.id);
                 db.ref('menu/' + i.id).update({ stok: menuAsli.stok - i.qty });
             });
@@ -476,7 +474,7 @@
             switchHalaman('landing');
         }
 
-        // --- PANEL KASIR / ADMIN (ORDERS) ---
+        // --- MANAGEMENT ORDERS BACKEND (ADMIN PANEL) ---
         function listenAdminOrders() {
             db.ref('orders').on('value', (snapshot) => {
                 const container = document.getElementById('list-pesanan');
@@ -533,20 +531,20 @@
 
         function stopScanner() { if (html5QrcodeScanner) { html5QrcodeScanner.stop().then(() => { html5QrcodeScanner = null; }).catch(() => {}); } }
 
-        // --- MANAGEMEN INPUT & ATUR STOK (ADMIN) ---
+        // --- SUBMIT INPUT HIDANGAN BARU & STOK (ADMIN PANEL) ---
         function simpanMenuBaru(e) {
             e.preventDefault();
             const nama = document.getElementById('menu-nama').value.trim();
             const harga = parseInt(document.getElementById('menu-harga').value);
             const stok = parseInt(document.getElementById('menu-stok').value);
-            const gambar = stringBase64Gambar; // Memasukkan string Base64 dari galeri file
+            const gambar = stringBase64Gambar; 
 
             const newMenuRef = db.ref('menu').push();
             newMenuRef.set({ nama, harga, stok, gambar }).then(() => {
                 alert("Menu baru berhasil masuk database dengan foto!");
                 document.getElementById('form-tambah-menu').reset();
                 document.getElementById('wrapper-preview-gambar').classList.add('hidden');
-                stringBase64Gambar = ""; // Reset string gambar
+                stringBase64Gambar = ""; 
             });
         }
 
@@ -586,7 +584,7 @@
             db.ref('menu/' + key).update({ stok: stokBaru });
         }
 
-        // --- CETAK NOTA STRUK THERMAL ---
+        // --- CETAK SINKRONISASI STRUK FISIK (PRINTER BLUETOOTH/THERMAL) ---
         function cetakNotaFisik(o) {
             const areaCetak = document.getElementById('area-cetak-nota');
             areaCetak.innerHTML = `
