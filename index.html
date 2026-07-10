@@ -471,7 +471,8 @@
                         </div>
                         <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
                             ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">SET LUNAS</button>` : ''}
-                            <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>
+                            ${o.sajian !== 'Selesai' ? `<button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>` : ''}
+                            <button onclick="hapusPesanan('${o.key}')" class="bg-red-500 text-white px-2.5 py-1 rounded text-xs font-bold">Hapus</button>
                             <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2.5 py-1 rounded text-xs font-bold">Struk</button>
                         </div>
                     </div>
@@ -481,6 +482,7 @@
 
         function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
         function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
+        function hapusPesanan(key) { if(confirm("Hapus pesanan ini dari antrean?")) db.ref('orders/' + key).remove(); }
         
         function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
         function mulaiScanner() {
