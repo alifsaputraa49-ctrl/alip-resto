@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* CSS KHUSUS CETAK PRINTER STRUK THERMAL */
         @media print {
             body { background: white; color: black; }
             .no-print { display: none !important; }
@@ -32,172 +31,63 @@
     <div class="max-w-lg mx-auto p-4 no-print">
         <header class="text-center py-6">
             <h1 class="text-4xl font-black text-orange-500">ALIP RESTO</h1>
-            <p class="text-gray-500 text-sm">Sistem Kasir & Pemesanan Terintegrasi Firebase</p>
+            <p class="text-gray-500 text-sm">Sistem Kasir & Pemesanan Terintegrasi</p>
         </header>
 
         <div id="view-landing" class="space-y-4 my-8">
             <div class="bg-white p-6 rounded-3xl shadow-sm border text-center">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Selamat Datang</h2>
-                <p class="text-gray-500 text-sm mb-6">Silakan pilih hak akses untuk melanjutkan:</p>
-                
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="switchHalaman('user')" class="flex items-center justify-between p-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-bold text-left transition shadow-md shadow-orange-500/20">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-utensils"></i></div>
-                            <div>
-                                <p class="text-base">Masuk Sebagai Pelanggan</p>
-                                <p class="text-xs text-orange-100 font-normal">Pesan menu makanan & minuman</p>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-
-                    <button onclick="masukSebagaiAdmin()" class="flex items-center justify-between p-4 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl font-bold text-left transition shadow-md">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-user-tie"></i></div>
-                            <div>
-                                <p class="text-base">Masuk Sebagai Admin / Kasir</p>
-                                <p class="text-xs text-gray-400 font-normal">Kelola menu, pesanan, & stok</p>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-lock text-gray-500 text-sm"></i>
-                    </button>
-                </div>
+                <button onclick="switchHalaman('user')" class="w-full p-4 bg-orange-500 text-white rounded-2xl font-bold mb-3 shadow-lg">Masuk Sebagai Pelanggan</button>
+                <button onclick="masukSebagaiAdmin()" class="w-full p-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg">Masuk Sebagai Admin</button>
             </div>
         </div>
 
         <div id="view-user" class="hidden space-y-4">
-            <button onclick="switchHalaman('landing')" class="text-xs text-gray-500 font-bold"><i class="fa-solid fa-arrow-left"></i> Kembali ke Awal</button>
-            
-            <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
-                <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-user-edit text-orange-500"></i> Informasi Pelanggan</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="nama" placeholder="Nama Anda" class="w-full p-3 border rounded-xl focus:outline-none focus:border-orange-500 text-sm">
-                    <input type="text" id="meja" placeholder="No. Meja" class="w-full p-3 border rounded-xl focus:outline-none focus:border-orange-500 text-sm">
-                </div>
+            <button onclick="switchHalaman('landing')" class="text-xs font-bold"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+            <input type="text" id="nama" placeholder="Nama Anda" class="w-full p-3 border rounded-xl text-sm">
+            <input type="text" id="meja" placeholder="No. Meja" class="w-full p-3 border rounded-xl text-sm">
+            <div id="user-menu-list" class="bg-white p-5 rounded-2xl border"></div>
+            <div class="flex gap-2">
+                <button onclick="pilihMetode('Tunai')" id="btn-tunai" class="flex-1 p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600">Tunai</button>
+                <button onclick="pilihMetode('QRIS')" id="btn-qris" class="flex-1 p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400">QRIS</button>
             </div>
-
-            <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
-                <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-book-open text-orange-500"></i> Pilih Daftar Menu</h3>
-                <div id="user-menu-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                    <p class="text-center text-xs text-gray-400 py-4">Memuat katalog menu...</p>
-                </div>
-            </div>
-            
-            <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
-                <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-credit-card text-orange-500"></i> Metode Pembayaran</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="pilihMetode('Tunai')" id="btn-tunai" class="p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600">Bayar di Kasir (Tunai)</button>
-                    <button onclick="pilihMetode('QRIS')" id="btn-qris" class="p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400">DANA (QRIS)</button>
-                </div>
-                <div class="border-t pt-3 flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase">Total Tagihan</span>
-                    <span id="total-harga-display" class="text-xl font-black text-gray-900">Rp 0</span>
-                </div>
-                <button onclick="submitOrder()" class="w-full bg-orange-500 text-white p-4 rounded-xl font-bold text-sm shadow-md uppercase tracking-wider">Kirim & Dapatkan Nota</button>
-            </div>
+            <button onclick="submitOrder()" class="w-full bg-orange-500 text-white p-4 rounded-xl font-bold">Kirim Pesanan</button>
         </div>
 
         <div id="view-nota" class="hidden space-y-4">
-            <div id="alert-alarm" class="hidden bg-red-600 text-white p-4 rounded-2xl text-center font-bold text-sm animate-pulse space-y-2 shadow-lg">
-                <p><i class="fa-solid fa-bell fa-bounce mr-1"></i> PANGGILAN: PESANAN ANDA SUDAH SELESAI! <i class="fa-solid fa-bell fa-bounce ml-1"></i></p>
-                <button onclick="matikanAlarmPelanggan()" class="bg-white text-red-600 px-4 py-1.5 rounded-lg text-xs font-black shadow">Ambil Pesanan & Matikan Suara</button>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-dashed border-gray-300 shadow-md space-y-4 relative overflow-hidden">
-                <div id="badge-lunas" class="hidden absolute top-4 right-4 border-4 border-green-600 text-green-600 font-black text-xs px-3 py-1 rounded transform rotate-12 bg-white/90">LUNAS</div>
-
-                <div class="text-center border-b pb-3">
-                    <h3 class="font-black text-xl text-gray-800">NOTA DIGITAL</h3>
-                    <p class="text-xs text-gray-400">Tunjukkan barcode/QR di bawah ke Kasir</p>
+            <div class="bg-white p-6 rounded-3xl border shadow-md relative text-center">
+                <div id="badge-lunas" class="hidden absolute top-4 right-4 bg-green-600 text-white font-black text-xs px-3 py-1 rounded rotate-12">LUNAS</div>
+                <h3 class="font-black text-xl mb-4">NOTA DIGITAL</h3>
+                <div id="qrcode-container" class="flex justify-center p-4"></div>
+                <div class="text-left text-xs space-y-1 mt-4 border-t pt-4">
+                    <p>Status: <span id="nota-status" class="font-bold"></span></p>
+                    <p>ID Order: <span id="nota-id" class="font-bold"></span></p>
                 </div>
-
-                <div class="text-xs space-y-1.5 font-mono text-gray-600">
-                    <div class="flex justify-between"><span>ID ORDER:</span><span id="nota-id" class="font-bold text-gray-900"></span></div>
-                    <div class="flex justify-between"><span>NAMA:</span><span id="nota-nama" class="font-bold text-gray-900"></span></div>
-                    <div class="flex justify-between"><span>NO MEJA:</span><span id="nota-meja" class="font-bold text-gray-900"></span></div>
-                    <div class="flex justify-between"><span>METODE:</span><span id="nota-metode" class="font-bold text-orange-500"></span></div>
-                    <div class="flex justify-between"><span>STATUS:</span><span id="nota-status" class="font-bold"></span></div>
-                    <div class="border-t pt-1 mt-1 flex justify-between"><span>TOTAL:</span><span id="nota-total" class="font-black text-gray-900 text-sm"></span></div>
-                </div>
-
-                <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
-                    <div id="qrcode-container" class="p-2 bg-white border rounded-lg"></div>
-                    <p class="text-[10px] font-bold text-gray-400 text-center uppercase tracking-wider">Scan QR Code ini di Kasir untuk Validasi</p>
-                </div>
-
-                <button onclick="keluarHalamanNota()" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-xs">Kembali ke Menu Utama</button>
+                <button onclick="keluarHalamanNota()" class="w-full mt-6 bg-gray-900 text-white py-3 rounded-xl font-bold">Tutup Nota & Kembali</button>
             </div>
         </div>
 
         <div id="view-admin" class="hidden space-y-4">
-            <div class="flex justify-between items-center">
-                <button onclick="switchHalaman('landing')" class="text-xs text-gray-500 font-bold"><i class="fa-solid fa-arrow-left"></i> Keluar Admin</button>
-                <span class="bg-gray-900 text-white font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">Panel Kasir/Admin</span>
-            </div>
-
             <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl">
-                <button onclick="switchTabAdmin('pesanan')" id="tab-btn-pesanan" class="py-2.5 rounded-lg text-xs font-bold text-center transition bg-white text-gray-900 shadow-sm">
-                    <i class="fa-solid fa-receipt mr-1"></i> Pesanan Masuk
-                </button>
-                <button onclick="switchTabAdmin('menu')" id="tab-btn-menu" class="py-2.5 rounded-lg text-xs font-bold text-center transition text-gray-500 hover:text-gray-900">
-                    <i class="fa-solid fa-hamburger mr-1"></i> Input & Kelola Menu
-                </button>
+                <button onclick="switchTabAdmin('pesanan')" id="tab-btn-pesanan" class="py-2.5 rounded-lg text-xs font-bold bg-white">Pesanan Masuk</button>
+                <button onclick="switchTabAdmin('menu')" id="tab-btn-menu" class="py-2.5 rounded-lg text-xs font-bold text-gray-500">Kelola Menu</button>
             </div>
-
             <div id="tab-konten-pesanan" class="space-y-4">
-                <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                    <h3 class="font-bold text-gray-800 text-xs flex items-center gap-2"><i class="fa-solid fa-camera text-orange-500"></i> Scanner Validasi Nota Pelanggan</h3>
-                    <div id="scanner-reader" class="overflow-hidden rounded-lg bg-gray-50 border max-w-full"></div>
-                    <div class="flex gap-2">
-                        <button onclick="mulaiScanner()" class="flex-1 bg-orange-500 text-white text-xs py-2 rounded-lg font-bold shadow-sm">Aktifkan Kamera Scan</button>
-                        <button onclick="stopScanner()" class="bg-gray-200 text-gray-600 text-xs px-3 py-2 rounded-lg font-bold">Matikan</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                    <h3 class="font-black text-sm text-gray-800 mb-3"><i class="fa-solid fa-clipboard-list text-orange-500"></i> Antrean Nota Masuk</h3>
-                    <div id="list-pesanan" class="space-y-3">Memuat data antrean...</div>
-                </div>
+                <div id="scanner-reader" class="rounded-lg border"></div>
+                <button onclick="mulaiScanner()" class="w-full p-2 bg-blue-600 text-white rounded-lg text-xs font-bold">Aktifkan Scanner</button>
+                <div id="list-pesanan" class="space-y-3"></div>
             </div>
-
             <div id="tab-konten-menu" class="hidden space-y-4">
-                <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-                    <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-plus-circle text-orange-500"></i> Tambah Hidangan Baru</h3>
-                    <form id="form-tambah-menu" onsubmit="simpanMenuBaru(event)" class="space-y-3">
-                        <input type="text" id="menu-nama" required placeholder="Nama Hidangan (Contoh: Nasi Goreng)" class="w-full p-2.5 border rounded-xl text-xs focus:outline-none focus:border-orange-500">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="number" id="menu-harga" required placeholder="Harga Satuan (Rp)" class="w-full p-2.5 border rounded-xl text-xs focus:outline-none focus:border-orange-500">
-                            <input type="number" id="menu-stok" required placeholder="Jumlah Stok Awal" class="w-full p-2.5 border rounded-xl text-xs focus:outline-none focus:border-orange-500">
-                        </div>
-                        
-                        <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300 text-center relative">
-                            <label class="block text-[11px] font-bold text-gray-500 mb-1.5"><i class="fa-solid fa-image text-orange-500 mr-1"></i> Foto Hidangan Menu:</label>
-                            
-                            <input type="file" id="menu-file-input" accept="image/*" onchange="previewDanKonversiGambar(this)" class="hidden">
-                            
-                            <button type="button" onclick="document.getElementById('menu-file-input').click()" class="bg-orange-500 text-white font-bold text-[11px] px-4 py-2 rounded-lg shadow-sm hover:bg-orange-600 transition">
-                                <i class="fa-solid fa-folder-open mr-1"></i> Buka Galeri / Explorer
-                            </button>
-                            
-                            <div id="wrapper-preview-gambar" class="hidden mt-3 flex flex-col items-center justify-center gap-1">
-                                <img id="preview-gambar-menu" src="" class="w-20 h-20 object-cover rounded-lg border shadow-sm">
-                                <span class="text-[10px] text-green-600 font-bold"><i class="fa-solid fa-check"></i> Gambar siap diunggah!</span>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-orange-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Simpan Ke Katalog</button>
-                    </form>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                    <h3 class="font-black text-xs text-gray-800 uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked text-orange-500"></i> Atur & Ubah Jumlah Stok Langsung</h3>
-                    <div id="admin-stok-list" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
-                </div>
+                <form onsubmit="simpanMenuBaru(event)" class="space-y-2 bg-white p-4 rounded-xl border">
+                    <input type="text" id="menu-nama" required placeholder="Nama" class="w-full p-2 border rounded-xl text-xs">
+                    <input type="number" id="menu-harga" required placeholder="Harga" class="w-full p-2 border rounded-xl text-xs">
+                    <input type="number" id="menu-stok" required placeholder="Stok" class="w-full p-2 border rounded-xl text-xs">
+                    <input type="file" id="menu-file-input" accept="image/*" onchange="previewDanKonversiGambar(this)">
+                    <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded-xl text-xs font-bold">Simpan Menu</button>
+                </form>
+                <div id="admin-stok-list" class="space-y-2"></div>
             </div>
         </div>
     </div>
-
     <div id="area-cetak-nota" style="display: none;"></div>
 
     <script>
@@ -210,130 +100,34 @@
             messagingSenderId: "1234567890",
             appId: "1:1234567890:web:abcdef"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let selectedMetode = 'Tunai';
-        let html5QrcodeScanner = null;
-        let currentFirebaseOrderKey = null;
-        let audioCtx = null;
-        let intervalAlarmSuara = null;
-        let listMenuData = [];
-        let keranjangBelanja = {};
-        let stringBase64Gambar = ""; 
-
-        function masukSebagaiAdmin() {
-            if (prompt("Masukkan Password Admin:") === "@/if$@putr@") {
-                switchHalaman('admin');
-            } else {
-                alert("Password Salah!");
-            }
-        }
+        let selectedMetode = 'Tunai', currentFirebaseOrderKey = null, keranjangBelanja = {}, listMenuData = [], stringBase64Gambar = "";
 
         function switchHalaman(view) {
-            document.getElementById('view-landing').classList.add('hidden');
-            document.getElementById('view-user').classList.add('hidden');
-            document.getElementById('view-nota').classList.add('hidden');
-            document.getElementById('view-admin').classList.add('hidden');
-            stopScanner();
-            if (view === 'landing') { document.getElementById('view-landing').classList.remove('hidden'); db.ref('orders').off(); }
-            else if (view === 'user') { document.getElementById('view-user').classList.remove('hidden'); listenKatalogMenuPelanggan(); }
-            else if (view === 'admin') { document.getElementById('view-admin').classList.remove('hidden'); switchTabAdmin('pesanan'); }
+            document.querySelectorAll('div[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
         }
 
         function switchTabAdmin(tab) {
-            stopScanner();
-            if (tab === 'pesanan') {
-                document.getElementById('tab-konten-pesanan').classList.remove('hidden');
-                document.getElementById('tab-konten-menu').classList.add('hidden');
-                document.getElementById('tab-btn-pesanan').className = "py-2.5 rounded-lg text-xs font-bold text-center transition bg-white text-gray-900 shadow-sm";
-                document.getElementById('tab-btn-menu').className = "py-2.5 rounded-lg text-xs font-bold text-center transition text-gray-500 hover:text-gray-900";
-                listenAdminOrders();
-            } else if (tab === 'menu') {
-                document.getElementById('tab-konten-pesanan').classList.add('hidden');
-                document.getElementById('tab-konten-menu').classList.remove('hidden');
-                document.getElementById('tab-btn-pesanan').className = "py-2.5 rounded-lg text-xs font-bold text-center transition text-gray-500 hover:text-gray-900";
-                document.getElementById('tab-btn-menu').className = "py-2.5 rounded-lg text-xs font-bold text-center transition bg-white text-gray-900 shadow-sm";
-                listenStokMenuDiAdmin();
-            }
+            document.getElementById('tab-konten-pesanan').classList.toggle('hidden', tab !== 'pesanan');
+            document.getElementById('tab-konten-menu').classList.toggle('hidden', tab !== 'menu');
+            if(tab === 'pesanan') listenAdminOrders(); else listenStokMenuDiAdmin();
         }
 
-        function previewDanKonversiGambar(input) {
-            const file = input.files[0];
-            if (file) {
-                if (file.size > 1024 * 1024) { alert("Ukuran file terlalu besar!"); input.value = ""; return; }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    stringBase64Gambar = e.target.result; 
-                    document.getElementById('preview-gambar-menu').src = stringBase64Gambar;
-                    document.getElementById('wrapper-preview-gambar').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+        function masukSebagaiAdmin() { if (prompt("Password Admin:") === "@/if$@putr@") switchHalaman('admin'); else alert("Salah!"); }
 
-        function listenKatalogMenuPelanggan() {
-            db.ref('menu').on('value', (snapshot) => {
-                listMenuData = [];
-                const container = document.getElementById('user-menu-list');
-                container.innerHTML = '';
-                snapshot.forEach((child) => { listMenuData.push({ id: child.key, ...child.val() }); });
-                container.innerHTML = listMenuData.map(m => `
-                    <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border">
-                        <div class="flex items-center gap-3">
-                            <img src="${m.gambar}" class="w-12 h-12 object-cover rounded-lg">
-                            <div>
-                                <p class="font-bold text-gray-900 text-xs">${m.nama}</p>
-                                <p class="text-xs font-black text-orange-500">Rp ${parseInt(m.harga).toLocaleString('id-ID')}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 bg-white border px-2 py-1 rounded-xl">
-                            <button onclick="aturQtyItem('${m.id}', -1)" class="px-1.5 font-bold">-</button>
-                            <span id="qty-item-${m.id}" class="text-xs w-4 text-center font-bold">0</span>
-                            <button onclick="aturQtyItem('${m.id}', 1)" class="px-1.5 font-bold">+</button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function aturQtyItem(id, perubahan) {
-            if (!keranjangBelanja[id]) keranjangBelanja[id] = { id: id, nama: listMenuData.find(m=>m.id==id).nama, harga: parseInt(listMenuData.find(m=>m.id==id).harga), qty: 0 };
-            keranjangBelanja[id].qty = Math.max(0, keranjangBelanja[id].qty + perubahan);
-            document.getElementById(`qty-item-${id}`).innerText = keranjangBelanja[id].qty;
-            hitungUlangTotalBelanja();
-        }
-
-        function hitungUlangTotalBelanja() {
-            let total = 0;
-            Object.values(keranjangBelanja).forEach(i => total += (i.harga * i.qty));
-            document.getElementById('total-harga-display').innerText = "Rp " + total.toLocaleString('id-ID');
-        }
-
-        function pilihMetode(m) { 
-            selectedMetode = m; 
-            document.getElementById('btn-tunai').className = (m === 'Tunai') ? 'p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
-            document.getElementById('btn-qris').className = (m === 'QRIS') ? 'p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
+        function pilihMetode(m) {
+            selectedMetode = m;
+            document.getElementById('btn-tunai').className = (m === 'Tunai') ? 'flex-1 p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'flex-1 p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
+            document.getElementById('btn-qris').className = (m === 'QRIS') ? 'flex-1 p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'flex-1 p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
         }
 
         function submitOrder() {
-            const nama = document.getElementById('nama').value.trim();
-            const meja = document.getElementById('meja').value.trim();
-            const items = Object.values(keranjangBelanja);
-            if (!nama || !meja || items.length === 0) { alert("Lengkapi data!"); return; }
-
-            let total = 0;
-            let rincian = [];
-            items.forEach(i => { total += (i.harga * i.qty); rincian.push(`${i.nama} (${i.qty}x)`); });
-            
-            const orderData = { 
-                id: Math.floor(1000 + Math.random() * 9000), 
-                nama, meja, metode: selectedMetode, total, rincian: rincian.join(', '), 
-                status: 'Belum Bayar', sajian: 'Memasak',
-                timestamp: firebase.database.ServerValue.TIMESTAMP 
-            };
-
+            const nama = document.getElementById('nama').value, meja = document.getElementById('meja').value;
+            if (!nama || !meja) return alert("Lengkapi data!");
+            const orderData = { id: Math.floor(1000 + Math.random() * 9000), nama, meja, metode: selectedMetode, status: selectedMetode === 'QRIS' ? 'Menunggu Konfirmasi' : 'Belum Bayar', sajian: 'Memasak', timestamp: firebase.database.ServerValue.TIMESTAMP };
             const ref = db.ref('orders').push();
             ref.set(orderData).then(() => {
                 currentFirebaseOrderKey = ref.key;
@@ -341,28 +135,32 @@
             });
         }
 
+        function tampilkanNotaDigitalPelanggan(order) {
+            switchHalaman('nota');
+            document.getElementById('nota-id').innerText = "#" + order.id;
+            document.getElementById('qrcode-container').innerHTML = "";
+            new QRCode(document.getElementById('qrcode-container'), { text: currentFirebaseOrderKey, width: 150, height: 150 });
+            
+            db.ref('orders/' + currentFirebaseOrderKey).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    document.getElementById('nota-status').innerText = data.status;
+                    document.getElementById('badge-lunas').classList.toggle('hidden', data.status !== 'Lunas');
+                }
+            });
+        }
+
         function listenAdminOrders() {
             db.ref('orders').on('value', (snapshot) => {
-                const container = document.getElementById('list-pesanan');
-                container.innerHTML = '';
                 let arr = [];
-                snapshot.forEach(child => { arr.push({ key: child.key, ...child.val() }); });
-                // URUTAN TERBARU DI ATAS
+                snapshot.forEach(child => arr.push({ key: child.key, ...child.val() }));
                 arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-                container.innerHTML = arr.map(o => `
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <div class="flex justify-between">
-                            <p class="font-bold text-sm">#${o.id} - ${o.nama}</p>
-                            <span class="text-[9px] text-gray-400">${o.timestamp ? new Date(o.timestamp).toLocaleTimeString() : ''}</span>
-                        </div>
-                        <p class="text-xs text-gray-600">${o.rincian}</p>
-                        <p class="text-[11px] font-bold mt-2">Status: ${o.status} | Sajian: ${o.sajian}</p>
-                        <div class="flex gap-1 mt-2">
-                            ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px]">LUNAS</button>` : ''}
-                            ${o.sajian !== 'Selesai' ? `<button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2 py-1 rounded text-[10px]">SELESAI</button>` : ''}
-                            <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2 py-1 rounded text-[10px]">Struk</button>
-                        </div>
+                document.getElementById('list-pesanan').innerHTML = arr.map(o => `
+                    <div class="bg-white p-4 rounded-xl border">
+                        <p class="font-bold">#${o.id} - ${o.nama} (${o.metode})</p>
+                        <p class="text-[10px]">Status: <b>${o.status}</b></p>
+                        ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold">VERIFIKASI LUNAS</button>` : ''}
+                        <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2 py-1 rounded text-[10px] font-bold ml-1">SELESAI</button>
                     </div>
                 `).join('');
             });
@@ -370,37 +168,31 @@
 
         function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
         function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
+        function keluarHalamanNota() { if(currentFirebaseOrderKey) db.ref('orders/' + currentFirebaseOrderKey).off(); switchHalaman('landing'); }
+        
+        function previewDanKonversiGambar(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { stringBase64Gambar = e.target.result; };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        function simpanMenuBaru(e) {
+            e.preventDefault();
+            db.ref('menu').push({ nama: document.getElementById('menu-nama').value, harga: document.getElementById('menu-harga').value, stok: document.getElementById('menu-stok').value, gambar: stringBase64Gambar });
+            alert("Menu tersimpan!");
+        }
 
         function listenStokMenuDiAdmin() {
             db.ref('menu').on('value', (snapshot) => {
-                const container = document.getElementById('admin-stok-list');
-                container.innerHTML = '';
-                snapshot.forEach(child => {
-                    const m = child.val();
-                    const key = child.key;
-                    container.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-xl">
-                            <span class="text-xs font-bold">${m.nama} (${m.stok})</span>
-                            <div class="flex gap-1">
-                                <button onclick="ubahStokLangsung('${key}', -1, ${m.stok})" class="px-2 bg-red-500 text-white rounded">-</button>
-                                <button onclick="ubahStokLangsung('${key}', 1, ${m.stok})" class="px-2 bg-green-500 text-white rounded">+</button>
-                                <button onclick="hapusMenu('${key}')" class="px-2 bg-gray-400 text-white rounded">x</button>
-                            </div>
-                        </div>
-                    `;
-                });
+                let html = "";
+                snapshot.forEach(c => { const m = c.val(); html += `<div class="bg-white p-2 rounded border text-xs">${m.nama} - Stok: ${m.stok} <button onclick="hapusMenu('${c.key}')" class="text-red-500 font-bold ml-2">X</button></div>`; });
+                document.getElementById('admin-stok-list').innerHTML = html;
             });
         }
-
-        function ubahStokLangsung(key, perubahan, stokSekarang) { db.ref('menu/' + key).update({ stok: Math.max(0, stokSekarang + perubahan) }); }
-        function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
-        function simpanMenuBaru(e) { e.preventDefault(); /* ... */ }
-        function mulaiScanner() { /* ... */ }
-        function stopScanner() { /* ... */ }
-        function cetakNotaFisik(o) { /* ... */ }
-        function tampilkanNotaDigitalPelanggan(o) { /* ... */ }
-        function matikanAlarmPelanggan() { /* ... */ }
-        function keluarHalamanNota() { /* ... */ }
+        
+        function hapusMenu(key) { db.ref('menu/' + key).remove(); }
+        function mulaiScanner() { /* Logic Scanner Anda */ }
+        function cetakNotaFisik(o) { window.print(); }
     </script>
 </body>
 </html>
