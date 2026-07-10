@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* CSS KHUSUS CETAK PRINTER STRUK THERMAL */
         @media print {
             body { background: white; color: black; }
             .no-print { display: none !important; }
@@ -173,13 +172,10 @@
                         
                         <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300 text-center relative">
                             <label class="block text-[11px] font-bold text-gray-500 mb-1.5"><i class="fa-solid fa-image text-orange-500 mr-1"></i> Foto Hidangan Menu:</label>
-                            
                             <input type="file" id="menu-file-input" accept="image/*" onchange="previewDanKonversiGambar(this)" class="hidden">
-                            
                             <button type="button" onclick="document.getElementById('menu-file-input').click()" class="bg-orange-500 text-white font-bold text-[11px] px-4 py-2 rounded-lg shadow-sm hover:bg-orange-600 transition">
                                 <i class="fa-solid fa-folder-open mr-1"></i> Buka Galeri / Explorer
                             </button>
-                            
                             <div id="wrapper-preview-gambar" class="hidden mt-3 flex flex-col items-center justify-center gap-1">
                                 <img id="preview-gambar-menu" src="" class="w-20 h-20 object-cover rounded-lg border shadow-sm">
                                 <span class="text-[10px] text-green-600 font-bold"><i class="fa-solid fa-check"></i> Gambar siap diunggah!</span>
@@ -466,12 +462,13 @@
                             <p class="text-xs text-gray-500 font-medium mt-1">No. Meja: ${o.meja} | Menu: ${o.rincian || '-'}</p>
                             <p class="text-[11px] font-bold mt-1">
                                 Status: <span class="${o.status === 'Lunas' ? 'text-green-600' : 'text-red-500'}">${o.status}</span> 
-                                | Sajian: ${o.sajian || 'Memasak'}
+                                | Sajian: ${o.sajian === 'Selesai' ? '<span class="text-green-600 font-black">PESANAN SELESAI</span>' : 'Memasak'}
                             </p>
                         </div>
                         <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
                             ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">SET LUNAS</button>` : ''}
                             <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>
+                            <button onclick="hapusPesanan('${o.key}')" class="bg-red-500 text-white px-2.5 py-1 rounded text-xs font-bold">Hapus</button>
                             <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2.5 py-1 rounded text-xs font-bold">Struk</button>
                         </div>
                     </div>
@@ -481,6 +478,7 @@
 
         function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
         function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
+        function hapusPesanan(key) { if(confirm("Hapus pesanan ini dari daftar?")) db.ref('orders/' + key).remove(); }
         
         function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
         function mulaiScanner() {
@@ -524,8 +522,6 @@
         }
 
         function cetakNotaFisik(o) {
-            const areaCetak = document.getElementById('area-cetak-nota');
-            areaCetak.innerHTML = `...`; // (Sesuai kode asli Anda)
             window.print();
         }
     </script>
