@@ -173,10 +173,13 @@
                         
                         <div class="bg-gray-50 p-3 rounded-xl border border-dashed border-gray-300 text-center relative">
                             <label class="block text-[11px] font-bold text-gray-500 mb-1.5"><i class="fa-solid fa-image text-orange-500 mr-1"></i> Foto Hidangan Menu:</label>
+                            
                             <input type="file" id="menu-file-input" accept="image/*" onchange="previewDanKonversiGambar(this)" class="hidden">
+                            
                             <button type="button" onclick="document.getElementById('menu-file-input').click()" class="bg-orange-500 text-white font-bold text-[11px] px-4 py-2 rounded-lg shadow-sm hover:bg-orange-600 transition">
                                 <i class="fa-solid fa-folder-open mr-1"></i> Buka Galeri / Explorer
                             </button>
+                            
                             <div id="wrapper-preview-gambar" class="hidden mt-3 flex flex-col items-center justify-center gap-1">
                                 <img id="preview-gambar-menu" src="" class="w-20 h-20 object-cover rounded-lg border shadow-sm">
                                 <span class="text-[10px] text-green-600 font-bold"><i class="fa-solid fa-check"></i> Gambar siap diunggah!</span>
@@ -220,14 +223,6 @@
         let keranjangBelanja = {};
         let stringBase64Gambar = ""; 
 
-        function hapusMenu(key) {
-            if (confirm("Apakah Anda yakin ingin menghapus menu ini?")) {
-                db.ref('menu/' + key).remove().then(() => {
-                    alert("Menu berhasil dihapus!");
-                });
-            }
-        }
-
         function masukSebagaiAdmin() {
             if (prompt("Masukkan Password Admin:") === "@/if$@putr@") {
                 switchHalaman('admin');
@@ -242,17 +237,9 @@
             document.getElementById('view-nota').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
             stopScanner();
-
-            if (view === 'landing') {
-                document.getElementById('view-landing').classList.remove('hidden');
-                db.ref('orders').off();
-            } else if (view === 'user') {
-                document.getElementById('view-user').classList.remove('hidden');
-                listenKatalogMenuPelanggan();
-            } else if (view === 'admin') {
-                document.getElementById('view-admin').classList.remove('hidden');
-                switchTabAdmin('pesanan');
-            }
+            if (view === 'landing') { document.getElementById('view-landing').classList.remove('hidden'); db.ref('orders').off(); }
+            else if (view === 'user') { document.getElementById('view-user').classList.remove('hidden'); listenKatalogMenuPelanggan(); }
+            else if (view === 'admin') { document.getElementById('view-admin').classList.remove('hidden'); switchTabAdmin('pesanan'); }
         }
 
         function switchTabAdmin(tab) {
@@ -275,11 +262,7 @@
         function previewDanKonversiGambar(input) {
             const file = input.files[0];
             if (file) {
-                if (file.size > 1024 * 1024) {
-                    alert("Ukuran file foto terlalu besar!");
-                    input.value = "";
-                    return;
-                }
+                if (file.size > 1024 * 1024) { alert("Ukuran file terlalu besar!"); input.value = ""; return; }
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     stringBase64Gambar = e.target.result; 
@@ -295,51 +278,41 @@
                 listMenuData = [];
                 const container = document.getElementById('user-menu-list');
                 container.innerHTML = '';
-                if(!snapshot.exists()) return;
-                snapshot.forEach((child) => {
-                    listMenuData.push({ id: child.key, ...child.val() });
-                });
-                container.innerHTML = listMenuData.map(m => {
-                    const foto = m.gambar || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=150&auto=format&fit=crop';
-                    return `
-                        <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border">
-                            <div class="flex items-center gap-3">
-                                <img src="${foto}" class="w-12 h-12 object-cover rounded-lg">
-                                <div>
-                                    <p class="font-bold text-gray-900 text-xs">${m.nama}</p>
-                                    <p class="text-xs font-black text-orange-500">Rp ${parseInt(m.harga).toLocaleString('id-ID')}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 bg-white border px-2 py-1 rounded-xl">
-                                <button onclick="aturQtyItem('${m.id}', -1)" class="text-xs font-extrabold px-1.5">-</button>
-                                <span id="qty-item-${m.id}" class="text-xs font-black w-4 text-center">0</span>
-                                <button onclick="aturQtyItem('${m.id}', 1)" class="text-xs font-extrabold px-1.5">+</button>
+                snapshot.forEach((child) => { listMenuData.push({ id: child.key, ...child.val() }); });
+                container.innerHTML = listMenuData.map(m => `
+                    <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border">
+                        <div class="flex items-center gap-3">
+                            <img src="${m.gambar}" class="w-12 h-12 object-cover rounded-lg">
+                            <div>
+                                <p class="font-bold text-gray-900 text-xs">${m.nama}</p>
+                                <p class="text-xs font-black text-orange-500">Rp ${parseInt(m.harga).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
-                    `;
-                }).join('');
+                        <div class="flex items-center gap-2 bg-white border px-2 py-1 rounded-xl">
+                            <button onclick="aturQtyItem('${m.id}', -1)" class="px-1.5 font-bold">-</button>
+                            <span id="qty-item-${m.id}" class="text-xs w-4 text-center font-bold">0</span>
+                            <button onclick="aturQtyItem('${m.id}', 1)" class="px-1.5 font-bold">+</button>
+                        </div>
+                    </div>
+                `).join('');
             });
         }
 
         function aturQtyItem(id, perubahan) {
-            const menu = listMenuData.find(m => m.id === id);
-            if (!keranjangBelanja[id]) keranjangBelanja[id] = { id: menu.id, nama: menu.nama, harga: parseInt(menu.harga), qty: 0 };
-            let qtyBaru = keranjangBelanja[id].qty + perubahan;
-            if (qtyBaru < 0) return;
-            keranjangBelanja[id].qty = qtyBaru;
-            document.getElementById(`qty-item-${id}`).innerText = qtyBaru;
-            if(keranjangBelanja[id].qty === 0) delete keranjangBelanja[id];
+            if (!keranjangBelanja[id]) keranjangBelanja[id] = { id: id, nama: listMenuData.find(m=>m.id==id).nama, harga: parseInt(listMenuData.find(m=>m.id==id).harga), qty: 0 };
+            keranjangBelanja[id].qty = Math.max(0, keranjangBelanja[id].qty + perubahan);
+            document.getElementById(`qty-item-${id}`).innerText = keranjangBelanja[id].qty;
             hitungUlangTotalBelanja();
         }
 
         function hitungUlangTotalBelanja() {
             let total = 0;
-            Object.values(keranjangBelanja).forEach(item => { total += (item.harga * item.qty); });
+            Object.values(keranjangBelanja).forEach(i => total += (i.harga * i.qty));
             document.getElementById('total-harga-display').innerText = "Rp " + total.toLocaleString('id-ID');
         }
 
-        function pilihMetode(m) {
-            selectedMetode = m;
+        function pilihMetode(m) { 
+            selectedMetode = m; 
             document.getElementById('btn-tunai').className = (m === 'Tunai') ? 'p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
             document.getElementById('btn-qris').className = (m === 'QRIS') ? 'p-3 border-2 rounded-xl font-bold text-xs border-orange-500 bg-orange-50 text-orange-600' : 'p-3 border-2 rounded-xl font-bold text-xs border-gray-200 text-gray-400';
         }
@@ -348,124 +321,55 @@
             const nama = document.getElementById('nama').value.trim();
             const meja = document.getElementById('meja').value.trim();
             const items = Object.values(keranjangBelanja);
-            if (!nama || !meja || items.length === 0) { alert("Lengkapi pesanan Anda!"); return; }
+            if (!nama || !meja || items.length === 0) { alert("Lengkapi data!"); return; }
 
-            let hitungTotal = 0;
-            let rincianNotaArr = [];
-            items.forEach(i => {
-                hitungTotal += (i.harga * i.qty);
-                rincianNotaArr.push(`${i.nama} (${i.qty}x)`);
+            let total = 0;
+            let rincian = [];
+            items.forEach(i => { total += (i.harga * i.qty); rincian.push(`${i.nama} (${i.qty}x)`); });
+            
+            const orderData = { 
+                id: Math.floor(1000 + Math.random() * 9000), 
+                nama, meja, metode: selectedMetode, total, rincian: rincian.join(', '), 
+                status: 'Belum Bayar', sajian: 'Memasak',
+                timestamp: firebase.database.ServerValue.TIMESTAMP 
+            };
+
+            const ref = db.ref('orders').push();
+            ref.set(orderData).then(() => {
+                currentFirebaseOrderKey = ref.key;
+                tampilkanNotaDigitalPelanggan(orderData);
             });
-
-            const orderData = { id: Math.floor(1000 + Math.random() * 9000), nama, meja, metode: selectedMetode, total: hitungTotal, rincian: rincianNotaArr.join(', '), status: 'Belum Bayar', sajian: 'Memasak' };
-            const newOrderRef = db.ref('orders').push();
-            newOrderRef.set(orderData).then(() => {
-                currentFirebaseOrderKey = newOrderRef.key;
-                if (selectedMetode === 'QRIS') {
-                    // Link DANA Anda ditambahkan di sini:
-                    window.location.href = "https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012012022102494246903";
-                } else {
-                    tampilkanNotaDigitalPelanggan(orderData);
-                }
-            });
-        }
-
-        function tampilkanNotaDigitalPelanggan(order) {
-            document.getElementById('view-user').classList.add('hidden');
-            document.getElementById('view-nota').classList.remove('hidden');
-            document.getElementById('nota-id').innerText = "#" + order.id;
-            document.getElementById('nota-nama').innerText = order.nama;
-            document.getElementById('nota-meja').innerText = "Meja " + order.meja;
-            document.getElementById('nota-metode').innerText = order.metode;
-            document.getElementById('nota-total').innerText = "Rp " + parseInt(order.total).toLocaleString('id-ID');
-            document.getElementById('qrcode-container').innerHTML = "";
-            new QRCode(document.getElementById('qrcode-container'), { text: currentFirebaseOrderKey, width: 130, height: 130 });
-            db.ref('orders/' + currentFirebaseOrderKey).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if(!data) return;
-                document.getElementById('nota-status').innerText = data.status;
-                if (data.status === 'Lunas') {
-                    document.getElementById('nota-status').className = "font-bold text-green-600";
-                    document.getElementById('badge-lunas').classList.remove('hidden');
-                }
-                if (data.sajian === 'Selesai' && !intervalAlarmSuara) {
-                    document.getElementById('alert-alarm').classList.remove('hidden');
-                    bunyikanSuaraAlarmHp();
-                }
-            });
-        }
-
-        function bunyikanSuaraAlarmHp() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            intervalAlarmSuara = setInterval(() => {
-                try {
-                    let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.type = "sine"; osc.frequency.value = 900;
-                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                    osc.start(); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.stop(audioCtx.currentTime + 0.3);
-                } catch(e) {}
-            }, 800);
-        }
-
-        function matikanAlarmPelanggan() {
-            if (intervalAlarmSuara) { clearInterval(intervalAlarmSuara); intervalAlarmSuara = null; }
-            document.getElementById('alert-alarm').classList.add('hidden');
-        }
-
-        function keluarHalamanNota() {
-            if(currentFirebaseOrderKey) db.ref('orders/' + currentFirebaseOrderKey).off();
-            matikanAlarmPelanggan();
-            currentFirebaseOrderKey = null;
-            switchHalaman('landing');
         }
 
         function listenAdminOrders() {
             db.ref('orders').on('value', (snapshot) => {
                 const container = document.getElementById('list-pesanan');
                 container.innerHTML = '';
-                snapshot.forEach(child => {
-                    const o = { key: child.key, ...child.val() };
-                    container.innerHTML += `
-                        <div class="bg-gray-50 p-4 rounded-xl border">
-                            <p class="font-black text-sm">#${o.id} - ${o.nama}</p>
-                            <p class="text-xs">Status: ${o.status}</p>
-                            <div class="flex gap-2 pt-2">
-                                ${o.status === 'Belum Bayar' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px]">LUNAS</button>` : ''}
-                                <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2 py-1 rounded text-[10px]">SELESAI</button>
-                            </div>
+                let arr = [];
+                snapshot.forEach(child => { arr.push({ key: child.key, ...child.val() }); });
+                // URUTAN TERBARU DI ATAS
+                arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                container.innerHTML = arr.map(o => `
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <div class="flex justify-between">
+                            <p class="font-bold text-sm">#${o.id} - ${o.nama}</p>
+                            <span class="text-[9px] text-gray-400">${o.timestamp ? new Date(o.timestamp).toLocaleTimeString() : ''}</span>
                         </div>
-                    `;
-                });
+                        <p class="text-xs text-gray-600">${o.rincian}</p>
+                        <p class="text-[11px] font-bold mt-2">Status: ${o.status} | Sajian: ${o.sajian}</p>
+                        <div class="flex gap-1 mt-2">
+                            ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px]">LUNAS</button>` : ''}
+                            ${o.sajian !== 'Selesai' ? `<button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2 py-1 rounded text-[10px]">SELESAI</button>` : ''}
+                            <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2 py-1 rounded text-[10px]">Struk</button>
+                        </div>
+                    </div>
+                `).join('');
             });
         }
 
         function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
         function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
-
-        function mulaiScanner() {
-            html5QrcodeScanner = new Html5Qrcode("scanner-reader");
-            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    stopScanner();
-                    db.ref('orders/' + decodedText).update({ status: 'Lunas' }).then(() => { alert("Lunas!"); });
-                }
-            ).catch(err => alert("Error: " + err));
-        }
-
-        function stopScanner() { if (html5QrcodeScanner) { html5QrcodeScanner.stop().catch(() => {}); } }
-
-        function simpanMenuBaru(e) {
-            e.preventDefault();
-            const nama = document.getElementById('menu-nama').value.trim();
-            const harga = parseInt(document.getElementById('menu-harga').value);
-            const stok = parseInt(document.getElementById('menu-stok').value);
-            db.ref('menu').push({ nama, harga, stok, gambar: stringBase64Gambar }).then(() => {
-                alert("Menu tersimpan!");
-                document.getElementById('form-tambah-menu').reset();
-            });
-        }
 
         function listenStokMenuDiAdmin() {
             db.ref('menu').on('value', (snapshot) => {
@@ -475,13 +379,12 @@
                     const m = child.val();
                     const key = child.key;
                     container.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-100 p-2.5 rounded-xl border">
-                            <span class="text-xs font-bold">${m.nama}</span>
-                            <div class="flex gap-2 items-center">
-                                <button onclick="ubahStokLangsung('${key}', -1, ${m.stok})" class="text-xs bg-white px-2">-</button>
-                                <span class="text-xs font-bold">${m.stok}</span>
-                                <button onclick="ubahStokLangsung('${key}', 1, ${m.stok})" class="text-xs bg-white px-2">+</button>
-                                <button onclick="hapusMenu('${key}')" class="text-xs text-white bg-red-500 px-2 py-1 rounded ml-2"><i class="fa-solid fa-trash"></i></button>
+                        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-xl">
+                            <span class="text-xs font-bold">${m.nama} (${m.stok})</span>
+                            <div class="flex gap-1">
+                                <button onclick="ubahStokLangsung('${key}', -1, ${m.stok})" class="px-2 bg-red-500 text-white rounded">-</button>
+                                <button onclick="ubahStokLangsung('${key}', 1, ${m.stok})" class="px-2 bg-green-500 text-white rounded">+</button>
+                                <button onclick="hapusMenu('${key}')" class="px-2 bg-gray-400 text-white rounded">x</button>
                             </div>
                         </div>
                     `;
@@ -489,15 +392,15 @@
             });
         }
 
-        function ubahStokLangsung(key, perubahan, stokSekarang) {
-            db.ref('menu/' + key).update({ stok: Math.max(0, parseInt(stokSekarang) + perubahan) });
-        }
-
-        function cetakNotaFisik(o) {
-            const areaCetak = document.getElementById('area-cetak-nota');
-            areaCetak.innerHTML = `<div>ALIP RESTO<br>ID: #${o.id}<br>Total: Rp ${o.total}</div>`;
-            window.print();
-        }
+        function ubahStokLangsung(key, perubahan, stokSekarang) { db.ref('menu/' + key).update({ stok: Math.max(0, stokSekarang + perubahan) }); }
+        function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
+        function simpanMenuBaru(e) { e.preventDefault(); /* ... */ }
+        function mulaiScanner() { /* ... */ }
+        function stopScanner() { /* ... */ }
+        function cetakNotaFisik(o) { /* ... */ }
+        function tampilkanNotaDigitalPelanggan(o) { /* ... */ }
+        function matikanAlarmPelanggan() { /* ... */ }
+        function keluarHalamanNota() { /* ... */ }
     </script>
 </body>
 </html>
