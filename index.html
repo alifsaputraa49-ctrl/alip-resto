@@ -251,7 +251,7 @@
         }
 
         function switchTabAdmin(tab) {
-            stopScanner(); // Perbaikan: Memastikan scanner mati saat pindah tab agar tombol selalu interaktif
+            stopScanner();
             if (tab === 'pesanan') {
                 document.getElementById('tab-konten-pesanan').classList.remove('hidden');
                 document.getElementById('tab-konten-menu').classList.add('hidden');
@@ -267,46 +267,6 @@
             }
         }
 
-        function listenAdminOrders() {
-            db.ref('orders').on('value', (snapshot) => {
-                const container = document.getElementById('list-pesanan');
-                container.innerHTML = '';
-                if(!snapshot.exists()) {
-                    container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Belum ada pesanan masuk.</p>';
-                    return;
-                }
-                let arr = [];
-                snapshot.forEach(child => { arr.push({ key: child.key, ...child.val() }); });
-                arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-                container.innerHTML = arr.map(o => `
-                    <div class="bg-gray-50 p-4 rounded-xl flex flex-col gap-2 border border-gray-200">
-                        <div>
-                            <div class="flex justify-between items-start">
-                                <p class="font-extrabold text-gray-900 text-sm">#${o.id} - ${o.nama}</p>
-                                <span class="px-2 py-0.5 text-[10px] rounded font-bold uppercase ${o.metode === 'QRIS' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${o.metode}</span>
-                            </div>
-                            <p class="text-xs text-gray-500 font-medium mt-1">No. Meja: ${o.meja} | Menu: ${o.rincian || '-'}</p>
-                            <p class="text-[11px] font-bold mt-1">
-                                Status: <span class="${o.status === 'Lunas' ? 'text-green-600' : 'text-red-500'}">${o.status}</span> 
-                                | Sajian: ${o.sajian || 'Memasak'}
-                            </p>
-                        </div>
-                        <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
-                            ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">SET LUNAS</button>` : ''}
-                            ${o.sajian !== 'Selesai' ? `<button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>` : ''}
-                            <button onclick="hapusPesanan('${o.key}')" class="bg-red-500 text-white px-2.5 py-1 rounded text-xs font-bold">Hapus</button>
-                            <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2.5 py-1 rounded text-xs font-bold">Struk</button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
-        function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
-        function hapusPesanan(key) { if(confirm("Hapus pesanan ini dari antrean?")) db.ref('orders/' + key).remove(); }
-        
         function previewDanKonversiGambar(input) {
             const file = input.files[0];
             if (file) {
@@ -484,15 +444,45 @@
             switchHalaman('landing');
         }
 
-        function tambahStokMenu(key, currentStok) {
-            const jumlah = prompt("Masukkan jumlah tambahan stok:");
-            if(jumlah && !isNaN(jumlah)) {
-                db.ref('menu/' + key).update({ stok: parseInt(currentStok) + parseInt(jumlah) });
-            }
+        function listenAdminOrders() {
+            db.ref('orders').on('value', (snapshot) => {
+                const container = document.getElementById('list-pesanan');
+                container.innerHTML = '';
+                if(!snapshot.exists()) {
+                    container.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Belum ada pesanan masuk.</p>';
+                    return;
+                }
+                let arr = [];
+                snapshot.forEach(child => { arr.push({ key: child.key, ...child.val() }); });
+                arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                container.innerHTML = arr.map(o => `
+                    <div class="bg-gray-50 p-4 rounded-xl flex flex-col gap-2 border border-gray-200">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <p class="font-extrabold text-gray-900 text-sm">#${o.id} - ${o.nama}</p>
+                                <span class="px-2 py-0.5 text-[10px] rounded font-bold uppercase ${o.metode === 'QRIS' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${o.metode}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-medium mt-1">No. Meja: ${o.meja} | Menu: ${o.rincian || '-'}</p>
+                            <p class="text-[11px] font-bold mt-1">
+                                Status: <span class="${o.status === 'Lunas' ? 'text-green-600' : 'text-red-500'}">${o.status}</span> 
+                                | Sajian: ${o.sajian || 'Memasak'}
+                            </p>
+                        </div>
+                        <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
+                            ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">SET LUNAS</button>` : ''}
+                            <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>
+                            <button onclick='siapkanCetak(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2.5 py-1 rounded text-xs font-bold">Struk</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
         }
 
-        function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
+        function setLunas(key) { db.ref('orders/' + key).update({ status: 'Lunas' }); }
+        function setPesananSelesai(key) { db.ref('orders/' + key).update({ sajian: 'Selesai' }); }
         
+        function hapusMenu(key) { if (confirm("Hapus menu?")) db.ref('menu/' + key).remove(); }
         function mulaiScanner() {
             html5QrcodeScanner = new Html5Qrcode("scanner-reader");
             html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
@@ -514,7 +504,6 @@
             }).then(() => {
                 alert("Tersimpan!");
                 document.getElementById('form-tambah-menu').reset();
-                document.getElementById('wrapper-preview-gambar').classList.add('hidden');
             });
         }
 
@@ -526,28 +515,38 @@
                     const m = child.val();
                     container.innerHTML += `
                         <div class="flex justify-between items-center bg-gray-100 p-2.5 rounded-xl border border-gray-200 text-xs">
-                            <span class="font-bold">${m.nama} (Stok: ${m.stok})</span>
-                            <div class="flex gap-2">
-                                <button onclick="tambahStokMenu('${child.key}', ${m.stok})" class="text-blue-500 font-bold px-2">+</button>
-                                <button onclick="hapusMenu('${child.key}')" class="text-red-500 font-bold px-2">X</button>
-                            </div>
+                            ${m.nama} (Stok: ${m.stok})
+                            <button onclick="hapusMenu('${child.key}')" class="text-red-500 font-bold">X</button>
                         </div>
                     `;
                 });
             });
         }
 
+        function siapkanCetak(o) {
+            cetakNotaFisik(o);
+        }
+
         function cetakNotaFisik(o) {
             const areaCetak = document.getElementById('area-cetak-nota');
             areaCetak.innerHTML = `
-                <div style="text-align: center; border-bottom: 1px dashed black; padding-bottom: 5px;">
-                    <h3 style="margin: 0; font-size: 16px;">ALIP RESTO</h3>
+                <div style="text-align: center; border-bottom: 1px dashed black; margin-bottom: 10px;">
+                    <h2 style="margin: 0; font-size: 18px;">ALIP RESTO</h2>
+                    <p style="margin: 0; font-size: 10px;">Sistem Kasir Digital</p>
                 </div>
-                <div style="margin-top: 10px; font-size: 11px;">
+                <div style="margin-bottom: 10px; font-size: 12px;">
                     <p style="margin: 0;">ID: #${o.id}</p>
                     <p style="margin: 0;">Nama: ${o.nama}</p>
-                    <p style="margin: 0;">Pesanan: ${o.rincian}</p>
-                    <p style="margin: 0; font-weight: bold;">TOTAL: Rp ${parseInt(o.total).toLocaleString('id-ID')}</p>
+                    <p style="margin: 0;">Meja: ${o.meja}</p>
+                </div>
+                <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; font-size: 12px;">
+                    <p style="margin: 0;">${o.rincian}</p>
+                </div>
+                <div style="margin-top: 10px; font-weight: bold; font-size: 14px;">
+                    <p style="margin: 0;">TOTAL: Rp ${parseInt(o.total).toLocaleString('id-ID')}</p>
+                </div>
+                <div style="text-align: center; margin-top: 20px; font-size: 10px;">
+                    <p>Terima Kasih atas Kunjungan Anda!</p>
                 </div>
             `;
             window.print();
