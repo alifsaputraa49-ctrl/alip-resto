@@ -251,7 +251,7 @@
         }
 
         function switchTabAdmin(tab) {
-            stopScanner();
+            stopScanner(); // Perbaikan: Memastikan scanner mati saat pindah tab agar tombol selalu interaktif
             if (tab === 'pesanan') {
                 document.getElementById('tab-konten-pesanan').classList.remove('hidden');
                 document.getElementById('tab-konten-menu').classList.add('hidden');
