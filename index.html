@@ -108,7 +108,8 @@
 
                 <div class="text-center border-b pb-3">
                     <h3 class="font-black text-xl text-gray-800">NOTA DIGITAL</h3>
-                    <p class="text-xs text-gray-400">Tunjukkan barcode/QR di bawah ke Kasir</p>
+                    <p class="text-xs text-orange-600 font-bold mt-2">Tunjukkan halaman ini ke kasir!</p>
+                    <p class="text-[10px] text-gray-400">Jangan tutup halaman ini sebelum ditunjukkan ke kasir.</p>
                 </div>
 
                 <div class="text-xs space-y-1.5 font-mono text-gray-600">
@@ -467,7 +468,7 @@
                         </div>
                         <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
                             ${o.status !== 'Lunas' ? `<button onclick="setLunas('${o.key}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm">SET LUNAS</button>` : ''}
-                            <button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>
+                            ${o.sajian !== 'Selesai' ? `<button onclick="setPesananSelesai('${o.key}')" class="bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-black">SELESAI</button>` : ''}
                             <button onclick="hapusPesanan('${o.key}')" class="bg-red-500 text-white px-2.5 py-1 rounded text-xs font-bold">Hapus</button>
                             <button onclick='cetakNotaFisik(${JSON.stringify(o)})' class="bg-gray-800 text-white px-2.5 py-1 rounded text-xs font-bold">Struk</button>
                         </div>
